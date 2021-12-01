@@ -1,0 +1,10 @@
+{
+  "name": "proxy",
+  "version": "0.0.1",
+  "dependencies": {
+    "blake3": "2.1.7",
+    "binary-parser": "2.0.2",
+    "bignum": "0.13.1",
+    "base58-native": "*"
+  }
+}
