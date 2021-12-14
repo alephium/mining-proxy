@@ -1,10 +1,6 @@
 var net = require('net');
 var events = require('events');
-var bignum = require('bignum');
 var util = require('./util.js');
-
-// var diff1Target = global.diff1Target = bignum.pow(2, 256 - 37).sub(1);
-var diff1Target = global.diff1Target = bignum.pow(2, 256 - 24).sub(1);
 
 // mining-pool port and host
 var PoolClient = module.exports = function(port, host, minerAddresses){

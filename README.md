@@ -5,7 +5,7 @@
 
 configs explanation:
 
-```json
+```javascript
 {
     "serverHost": "",       // mining pool server host
     "serverPort": 20032,    // mining pool server port
