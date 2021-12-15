@@ -5,15 +5,22 @@ var Block = require('./block');
 var Proxy = module.exports = function(port){
     var _this = this;
 
+    var id = 0
+    function nextId(){
+        id += 1;
+        if (id === Number.MAX_VALUE){
+            id = 0;
+        }
+        return id;
+    }
+
+    var miners = {};
+
     this.start = function(){
         var server = net.createServer(function(socket){
-            if (_this.miner){
-                console.log('Miner is connected, close the connection');
-                socket.destroy();
-                return;
-            }
-            _this.miner = socket;
-            console.log('Miner connected');
+            var minerId = nextId();
+            miners[minerId] = socket;
+            console.log('Miner connected, id: ' + minerId);
 
             socket.setKeepAlive(true);
             
@@ -23,22 +30,30 @@ var Proxy = module.exports = function(port){
                 var bodyLength = buffer.readUInt32BE();
                 var messageLength = bodyLength + 4;
                 if (buffer.length >= messageLength){
-                    _this.parseMessage(buffer.slice(4, messageLength));
+                    _this.parseMessage(buffer.slice(4, messageLength), function(error){
+                        if (error) {
+                            console.log('Parse message error: ' + error);
+                            socket.destroy();
+                        }
+                    });
                     buffer = buffer.slice(messageLength);
                 }
             });
             socket.on('close', function(){
-                console.log('Miner connection closed');
-                _this.miner = null;
+                console.log('Miner connection closed, id: ' + minerId);
+                _this.emit('connectionClosed', minerId);
             });
             socket.on('error', function(error){
-                console.log('Miner connection error: ' + error);
-                _this.miner = null;
+                console.log('Miner connection error: ' + error + ', id: ' + minerId);
+                _this.emit('connectionClosed', minerId);
             });
         });
 
         server.listen(port, function(){
             console.log("Proxy started, address: ", server.address());
+            _this.on('connectionClosed', function(minerId){
+                delete miners[minerId];
+            });
         });
     }
 
@@ -62,26 +77,30 @@ var Proxy = module.exports = function(port){
     }
 
     this.sendMiningJobs = function(jobs){
-        if (_this.miner) {
-            var body = Buffer.concat(jobs.map(job => jobData(job)));
-            var header = Buffer.alloc(9); // msgSize(4 bytes) + messageType(1 byte) + jobSize(4 bytes)
-            header.writeUInt32BE(jobs.length, 5);
-            header.writeUInt8(0x00, 4);
-            header.writeUInt32BE(body.length + 5);
-            var data = Buffer.concat([header, body]);
-            _this.miner.write(data);
+        if (Object.keys(miners).length == 0){
+            return;
+        }
+
+        var body = Buffer.concat(jobs.map(job => jobData(job)));
+        var header = Buffer.alloc(9); // msgSize(4 bytes) + messageType(1 byte) + jobSize(4 bytes)
+        header.writeUInt32BE(jobs.length, 5);
+        header.writeUInt8(0x00, 4);
+        header.writeUInt32BE(body.length + 5);
+        var data = Buffer.concat([header, body]);
+        for (var idx in miners){
+            miners[idx].write(data);
         }
     }
 
-    this.parseMessage = function(buffer){
+    this.parseMessage = function(buffer, callback){
         var messageType = buffer.readUInt8();
         if (messageType == 0x00){ // submit message
             var block = new Block(buffer.slice(5)); // block size + message type
             _this.emit('solution', block);
+            callback(null);
         }
         else {
-            console.log("Invalid message type: " + messageType);
-            _this.miner.destroy();
+            callback('Invalid message type: ' + messageType);
         }
     }
 }
