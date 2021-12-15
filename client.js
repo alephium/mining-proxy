@@ -29,7 +29,7 @@ var LastNJobs = function LastNJobs(jobSize){
 }
 
 // mining-pool port and host
-var PoolClient = module.exports = function(port, host, minerAddresses){
+var PoolClient = module.exports = function(config){
     var client = net.Socket();
     var _this = this;
 
@@ -74,13 +74,13 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
     }
 
     this.start = function(){
-        if (minerAddresses.length != 4){
-            console.log('Expect 4 miner addresses, but have ' + minerAddresses.length);
+        if (config.addresses.length != 4){
+            console.log('Expect 4 miner addresses, but have ' + config.addresses.length);
             process.exit(1);
         }
 
         for (var idx = 0; idx < 4; idx++){
-            var result = util.isValidAddress(minerAddresses[idx], idx);
+            var result = util.isValidAddress(config.addresses[idx], idx);
             if (!result[0]){
                 console.log('Invalid miner address, ' + result[1]);
                 process.exit(1);
@@ -97,7 +97,7 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
         client.removeAllListeners('connect');
 
         client.setEncoding('utf8');
-        client.connect(port, host);
+        client.connect(config.serverPort, config.serverHost);
         setup(client);
 
         client.on('connect', function(){
@@ -116,7 +116,7 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
     }
 
     this.currentJobs = [];
-    this.lastNJobs = new LastNJobs(60);
+    this.lastNJobs = new LastNJobs(config.jobSize);
     var handleMiningJobs = function(jobs){
         jobs.forEach(job => {
             job.headerBlob = Buffer.from(job.headerBlob, 'hex');
@@ -159,7 +159,7 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
                 fromGroup: block.fromGroup,
                 toGroup: block.toGroup,
                 nonce: block.nonce.toString('hex'),
-                worker: minerAddresses[block.toGroup]
+                worker: config.addresses[block.toGroup]
             }
         });
     }
