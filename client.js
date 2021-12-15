@@ -57,7 +57,7 @@ var PoolClient = module.exports = function(config){
                             break;
                         case "mining.set_difficulty":
                             _this.difficulty = messageJson.params[0];
-                            _this.target = diff1Target.div(Math.ceil(_this.difficulty)).toBuffer();
+                            _this.target = global.diff1Target.mul(256).div(Math.ceil(_this.difficulty * 256)).toBuffer();
                             console.log('Set difficulty to ' + _this.difficulty);
                             break;
                         case "mining.submit_result":
