@@ -12,15 +12,7 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Cache Dependencies
-        uses: actions/cache@v2
-        id: cache-deps
-        with:
-          path: .\node_modules
-          key: ${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
-
       - name: Install build dependencies
-        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: npm install
 
       - name: Build mining proxy
@@ -44,15 +36,7 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Cache Dependencies
-        uses: actions/cache@v2
-        id: cache-deps
-        with:
-          path: .\node_modules
-          key: ${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
-
       - name: Install build dependencies
-        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: npm install
 
       - name: Build mining proxy
@@ -76,18 +60,7 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Cache Dependencies
-        uses: actions/cache@v2
-        id: cache-deps
-        with:
-          path: |
-            .\node_modules
-            "C:\OpenSSL-Win64\lib\"
-            "C:\Program Files\OpenSSL-Win64"
-          key: ${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
-
       - name: Install build dependencies
-        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
           choco install openssl --no-progress
           New-Item C:\OpenSSL-Win64\lib -ItemType Directory
