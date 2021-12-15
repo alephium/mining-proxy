@@ -151,12 +151,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-linux
-            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-linux.checksum
-            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-macos
-            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-macos.checksum
-            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-windows.exe
-            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-windows.exe.checksum
+            alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux
+            alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux.checksum
+            alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos
+            alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos.checksum
+            alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe
+            alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe.checksum
 
   buildx_and_push_to_registry:
     name: Push Docker image to Docker Hub
