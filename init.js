@@ -11,7 +11,7 @@ if (!fs.existsSync('config.json')){
 var config = JSON.parse(fs.readFileSync("config.json", {encoding: 'utf8'}));
 global.diff1Target = BigNumber(2).pow(256).minus(1);
 var minerProxy = new proxy(config.proxyPort);
-var poolClient = new client(config.serverPort, config.serverHost, config.addresses);
+var poolClient = new client(config);
 
 minerProxy.start();
 poolClient.start();

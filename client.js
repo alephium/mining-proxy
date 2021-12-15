@@ -2,8 +2,34 @@ var net = require('net');
 var events = require('events');
 var util = require('./util.js');
 
+var LastNJobs = function LastNJobs(jobSize){
+    var chainIndexedJobs = [];
+    for (var i = 0; i < 16; i++){
+        chainIndexedJobs.push([]);
+    }
+
+    this.addJob = function(chainIndex, job){
+        var jobs = chainIndexedJobs[chainIndex];
+        if (jobs.length >= jobSize){
+            jobs.shift();
+        }
+        jobs.push(job);
+    }
+
+    // return null if job does not exist
+    this.getJob = function(chainIndex, header){
+        var jobs = chainIndexedJobs[chainIndex];
+        for (var idx = jobs.length - 1; idx >=0; idx--){
+            if (jobs[idx].headerBlob.equals(header)){
+                return jobs[idx];
+            }
+        }
+        return null;
+    }
+}
+
 // mining-pool port and host
-var PoolClient = module.exports = function(port, host, minerAddresses){
+var PoolClient = module.exports = function(config){
     var client = net.Socket();
     var _this = this;
 
@@ -48,13 +74,13 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
     }
 
     this.start = function(){
-        if (minerAddresses.length != 4){
-            console.log('Expect 4 miner addresses, but have ' + minerAddresses.length);
+        if (config.addresses.length != 4){
+            console.log('Expect 4 miner addresses, but have ' + config.addresses.length);
             process.exit(1);
         }
 
         for (var idx = 0; idx < 4; idx++){
-            var result = util.isValidAddress(minerAddresses[idx], idx);
+            var result = util.isValidAddress(config.addresses[idx], idx);
             if (!result[0]){
                 console.log('Invalid miner address, ' + result[1]);
                 process.exit(1);
@@ -71,7 +97,7 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
         client.removeAllListeners('connect');
 
         client.setEncoding('utf8');
-        client.connect(port, host);
+        client.connect(config.serverPort, config.serverHost);
         setup(client);
 
         client.on('connect', function(){
@@ -90,6 +116,7 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
     }
 
     this.currentJobs = [];
+    this.lastNJobs = new LastNJobs(config.jobSize);
     var handleMiningJobs = function(jobs){
         jobs.forEach(job => {
             job.headerBlob = Buffer.from(job.headerBlob, 'hex');
@@ -102,6 +129,7 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
             }
             var chainIndex = job.fromGroup * global.GroupSize + job.toGroup;
             _this.currentJobs[chainIndex] = job;
+            _this.lastNJobs.addJob(chainIndex, job);
         });
         _this.emit("jobs", jobs);
     }
@@ -118,25 +146,22 @@ var PoolClient = module.exports = function(port, host, minerAddresses){
     this.submit = function(block){
         console.log('Receive solution, hash: ' + block.hash.toString('hex') + ', chanIndex: ' + block.chainIndexStr);
         var chainIndex = block.fromGroup * global.GroupSize + block.toGroup;
-        var job = this.currentJobs[chainIndex];
+        var job = this.lastNJobs.getJob(chainIndex, block.headerBlob);
         if (!job) {
-            console.log('Job does not exist for chain: ' + block.chainIndexStr);
+            console.log('Ignore solution for stale job, chainIndex: ' + block.chainIndexStr);
             return;
         } 
-        if (job.headerBlob.equals(block.headerBlob) && 
-            job.txsBlob.equals(block.txsBlob)){
-            sendJson({
-                id: null,
-                method: "mining.submit",
-                params: {
-                    jobId: job.jobId,
-                    fromGroup: block.fromGroup,
-                    toGroup: block.toGroup,
-                    nonce: block.nonce.toString('hex'),
-                    worker: minerAddresses[block.toGroup]
-                }
-            })
-        }
+        sendJson({
+            id: null,
+            method: "mining.submit",
+            params: {
+                jobId: job.jobId,
+                fromGroup: block.fromGroup,
+                toGroup: block.toGroup,
+                nonce: block.nonce.toString('hex'),
+                worker: config.addresses[block.toGroup]
+            }
+        });
     }
 
     var sendJson = function(json){
