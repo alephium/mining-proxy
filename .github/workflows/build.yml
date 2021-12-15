@@ -141,7 +141,7 @@ jobs:
           filename=$(git rev-parse --short HEAD)
           mv "alephium-mining-proxy-linux_$filename" "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux"
           mv "alephium-mining-proxy-macos_$filename" "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos"
-          mv "alephium-mining-proxy-windows_$filename.exe" "alephium-mining-proxy-windows-${{ steps.get_version.outputs.VERSION }}.exe"
+          mv "alephium-mining-proxy-windows_$filename.exe" "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe"
           sha256sum "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux" > "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux.checksum"
           sha256sum "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos" > "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos.checksum"
           sha256sum "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe" > "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe.checksum"
