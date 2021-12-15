@@ -1,5 +1,6 @@
 {
     "diff1TargetNumZero": 30,
+    "jobSize": 30,
     "serverHost": "{{.env.SERVER_HOST}}",
     "serverPort": {{.env.SERVER_PORT}},
     "proxyPort": {{.env.PROXY_PORT}},

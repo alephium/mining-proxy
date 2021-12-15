@@ -8,17 +8,26 @@
   },
   "author": "alephium",
   "scripts": {
-    "start": "node ./init.js"
+    "start": "node ./init.js",
+    "build": "npx pkg . -C Brotli"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/alephium/mining-proxy.git"
   },
   "dependencies": {
-    "blake3": "2.1.7",
+    "@napi-rs/blake-hash": "1.3.0",
     "binary-parser": "2.0.2",
     "bignum": "0.13.1",
     "base58-native": "*"
+  },
+  "pkg": {
+    "scripts": "*.js",
+    "assets": "node_modules/**/*",
+    "outputPath": "bin"
+  },
+  "bin": {
+    "proxy": "init.js"
   },
   "engines": {
     "node": ">=14"
