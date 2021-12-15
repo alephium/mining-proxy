@@ -1,0 +1,198 @@
+name: build artifacts
+on: [ push ]
+
+jobs:
+  build-linux-artifact:
+    name: build-linux-artifact
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        id: cache-deps
+        with:
+          path: .\node_modules
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+
+      - name: Install build dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build mining proxy
+        run: npm run build -- --targets node16-linux-x64
+
+      - name: Rename mining proxy
+        run: mv bin/alephium-mining-proxy bin/alephium-mining-proxy-linux_$(git rev-parse --short "$GITHUB_SHA")
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: linux-binary
+          path: bin/alephium-mining-proxy-linux_*
+
+  build-macos-artifact:
+    name: build-macos-artifact
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        id: cache-deps
+        with:
+          path: .\node_modules
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+
+      - name: Install build dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build mining proxy
+        run: npm run build -- --targets node16-macos-x64
+
+      - name: Rename mining proxy
+        run: mv bin/alephium-mining-proxy bin/alephium-mining-proxy-macos_$(git rev-parse --short "$GITHUB_SHA")
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: macos-binary
+          path: bin/alephium-mining-proxy-macos_*
+
+  build-windows-artifact:
+    name: build-windows-artifact
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        id: cache-deps
+        with:
+          path: |
+            .\node_modules
+            "C:\OpenSSL-Win64\lib\"
+            "C:\Program Files\OpenSSL-Win64"
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+
+      - name: Install build dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          choco install openssl --no-progress
+          New-Item C:\OpenSSL-Win64\lib -ItemType Directory
+          New-Item -ItemType SymbolicLink -Path "C:\OpenSSL-Win64\lib\libeay32.lib" -Target "C:\Program Files\OpenSSL-Win64\lib\libcrypto.lib"
+          npm install
+
+      - name: Build mining proxy
+        run: npm run build -- --targets node16-windows-x64
+
+      - name: Rename mining proxy
+        run: mv bin/alephium-mining-proxy.exe bin/alephium-mining-proxy-windows_$(git rev-parse --short "$GITHUB_SHA").exe
+        shell: bash
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: windows-binary
+          path: bin/alephium-mining-proxy-windows_*
+
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs: [build-linux-artifact, build-macos-artifact, build-windows-artifact]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get linux artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: linux-binary
+
+      - name: Get macos artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: macos-binary
+
+      - name: Get Windows artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: windows-binary
+
+      - name: Get the version (Release prep)
+        id: get_version
+        run: |
+          version=$(echo ${GITHUB_REF/refs\/tags\//} | cut -c 2-)
+          echo ::set-output name=VERSION::$version
+        shell: bash
+
+      - name: Generate miner proxies checksums (Release prep)
+        run: |
+          filename=$(git rev-parse --short HEAD)
+          mv "alephium-mining-proxy-linux_$filename" "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux"
+          mv "alephium-mining-proxy-macos_$filename" "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos"
+          mv "alephium-mining-proxy-windows_$filename.exe" "alephium-mining-proxy-windows-${{ steps.get_version.outputs.VERSION }}.exe"
+          sha256sum "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux" > "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-linux.checksum"
+          sha256sum "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos" > "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-macos.checksum"
+          sha256sum "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe" > "alephium-mining-proxy-${{ steps.get_version.outputs.VERSION }}-windows.exe.checksum"
+          ls -la
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-linux
+            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-linux.checksum
+            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-macos
+            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-macos.checksum
+            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-windows.exe
+            alephium-${{ steps.get_version.outputs.VERSION }}-mining-proxy-windows.exe.checksum
+
+  buildx_and_push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - uses: docker/setup-qemu-action@v1
+      - uses: docker/setup-buildx-action@v1
+
+      - name: Get the version
+        id: get_version
+        run: |
+          version=$(git describe --tags --abbrev=0)
+          echo $version
+          echo ${version:1}
+          echo ::set-output name=VERSION::$version
+          echo ::set-output name=VERSION-NO-V::${version:1}
+        shell: bash
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and publish docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          build-args: RELEASE=${{ steps.get_version.outputs.VERSION-NO-V }}
+          platforms: linux/amd64
+          tags: |
+            docker.io/capito27/mining-proxy:${{ steps.get_version.outputs.VERSION }}
+            docker.io/capito27/mining-proxy:latest
+          push: true

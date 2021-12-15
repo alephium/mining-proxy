@@ -27,7 +27,28 @@ run miner:
 gpu-miner -p 30032
 ```
 
+# Build miner proxy
 
+N.B : At this point in time, it is only possible to build binaries for windows, linux and MacOS for the x64 architecture
+
+Dependencies :
+- install node.js(>=14), npm(>=8) and python(>=3.7)
+- Usual compilation tools (build-essentials for linux, Visual studio for windows, ...)
+- For windows : [openssl chocolatey package](https://community.chocolatey.org/packages/OpenSSL) 
+
+One can build the miner proxy into a self-contained binary file with the following, platform-specific, commands:
+```shell
+npm install
+# Build for linux
+npm run build -- --targets node16-linux-x64
+# Build for windows
+npm run build -- --targets node16-windows-x64 
+# Build for macos
+npm run build -- --targets node16-macos-x64
+```
+N.B : Cross-compiling provided broken binaries, as such, only build for the same target as the building machine
+
+The final executable can be found in the 'bin' directory.
 
 # Docker and docker-compose setup
 
