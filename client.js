@@ -97,6 +97,7 @@ var PoolClient = module.exports = function(config){
         client.removeAllListeners('connect');
 
         client.setEncoding('utf8');
+        client.setNoDelay(true);
         client.connect(config.serverPort, config.serverHost);
         setup(client);
 
