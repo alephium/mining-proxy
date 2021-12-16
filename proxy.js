@@ -23,6 +23,7 @@ var Proxy = module.exports = function(port){
             console.log('Miner connected, id: ' + minerId);
 
             socket.setKeepAlive(true);
+            socket.setNoDelay(true);
             
             var buffer = Buffer.from([]);
             socket.on('data', function(data){
