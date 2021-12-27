@@ -18,8 +18,12 @@ function xorByte(intValue){
 
 exports.isValidAddress = function(addressStr, groupIndex){
     var decoded = base58.decode(addressStr);
+    if (decoded.length != 33){ // prefix(1 byte) + public key hash(32 bytes)
+        return [false, 'incorrect P2PKH address size'];
+    }
+
     if (decoded[0] != 0x00){ // prefix for P2PKH
-        return [false, "Invalid P2PKH address"];
+        return [false, "invalid P2PKH address"];
     }
 
     var hint = djbHash(decoded.slice(1)) | 1;

@@ -65,6 +65,7 @@ var PoolClient = module.exports = function(config){
                             break;
                         default:
                             console.log("Received unkonw message, ", messageJson);
+                            client.destroy();
                             break;
                     }
                 });
