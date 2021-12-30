@@ -29,7 +29,7 @@ var LastNJobs = function LastNJobs(jobSize){
 }
 
 // mining-pool port and host
-var PoolClient = module.exports = function(config){
+var PoolClient = module.exports = function(config, logger){
     var client = net.Socket();
     var _this = this;
 
@@ -46,7 +46,7 @@ var PoolClient = module.exports = function(config){
                     try {
                         messageJson = JSON.parse(message);
                     } catch(e) {
-                        console.log("Invalid message, error: " + e);
+                        logger.error("Invalid message, error: " + e);
                         client.destroy();
                         return;
                     }
@@ -58,13 +58,13 @@ var PoolClient = module.exports = function(config){
                         case "mining.set_difficulty":
                             _this.difficulty = messageJson.params[0];
                             _this.target = global.diff1Target.mul(256).div(Math.ceil(_this.difficulty * 256)).toBuffer();
-                            console.log('Set difficulty to ' + _this.difficulty);
+                            logger.info('Set difficulty to ' + _this.difficulty);
                             break;
                         case "mining.submit_result":
                             handleSubmitResult(messageJson);
                             break;
                         default:
-                            console.log("Received unkonw message, ", messageJson);
+                            logger.error("Received unkonw message: ", messageJson);
                             client.destroy();
                             break;
                     }
@@ -76,14 +76,14 @@ var PoolClient = module.exports = function(config){
 
     this.start = function(){
         if (config.addresses.length != 4){
-            console.log('Expect 4 miner addresses, but have ' + config.addresses.length);
+            logger.error('Expect 4 miner addresses, but have ' + config.addresses.length);
             process.exit(1);
         }
 
         for (var idx = 0; idx < 4; idx++){
             var result = util.isValidAddress(config.addresses[idx], idx);
             if (!result[0]){
-                console.log('Invalid miner address, ' + result[1]);
+                logger.error('Invalid miner address, ' + result[1]);
                 process.exit(1);
             }
         }
@@ -103,16 +103,16 @@ var PoolClient = module.exports = function(config){
         setup(client);
 
         client.on('connect', function(){
-            console.log('Connected to mining pool');
+            logger.info('Connected to mining pool');
         });
 
         client.on('close', function(){
-            console.log('Mining pool connection closed, ' + 'trying to reconnect');
+            logger.info('Mining pool connection closed, ' + 'trying to reconnect');
             setTimeout(connectToMiningPool, 5000);
         });
 
         client.on('error', function(error){
-            console.log('Mining pool connection error: ' + error);
+            logger.error('Mining pool connection error: ' + error);
         });
 
     }
@@ -138,19 +138,19 @@ var PoolClient = module.exports = function(config){
 
     var handleSubmitResult = function(message){
         if (message.result){
-            console.log('Submit accepted');
+            logger.info('Submit accepted');
         }
         else {
-            console.log('Submit refused, error: ' + message.error);
+            logger.error('Submit refused, error: ' + message.error);
         }
     }
 
     this.submit = function(block){
-        console.log('Receive solution, hash: ' + block.hash.toString('hex') + ', chanIndex: ' + block.chainIndexStr);
+        logger.info('Receive solution, hash: ' + block.hash.toString('hex') + ', chanIndex: ' + block.chainIndexStr);
         var chainIndex = block.fromGroup * global.GroupSize + block.toGroup;
         var job = this.lastNJobs.getJob(chainIndex, block.headerBlob);
         if (!job) {
-            console.log('Ignore solution for stale job, chainIndex: ' + block.chainIndexStr);
+            logger.error('Ignore solution for stale job, chainIndex: ' + block.chainIndexStr);
             return;
         } 
         sendJson({
