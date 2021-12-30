@@ -2,7 +2,7 @@ var net = require('net');
 var events = require('events');
 var Block = require('./block');
 
-var Proxy = module.exports = function(port){
+var Proxy = module.exports = function(port, logger){
     var _this = this;
 
     var id = 0
@@ -20,7 +20,7 @@ var Proxy = module.exports = function(port){
         var server = net.createServer(function(socket){
             var minerId = nextId();
             miners[minerId] = socket;
-            console.log('Miner connected, id: ' + minerId);
+            logger.info('Miner connected, id: ' + minerId);
 
             socket.setKeepAlive(true);
             socket.setNoDelay(true);
@@ -33,7 +33,7 @@ var Proxy = module.exports = function(port){
                 if (buffer.length >= messageLength){
                     _this.parseMessage(buffer.slice(4, messageLength), function(error){
                         if (error) {
-                            console.log('Parse message error: ' + error);
+                            logger.error('Parse message error: ' + error);
                             socket.destroy();
                         }
                     });
@@ -41,17 +41,17 @@ var Proxy = module.exports = function(port){
                 }
             });
             socket.on('close', function(){
-                console.log('Miner connection closed, id: ' + minerId);
+                logger.info('Miner connection closed, id: ' + minerId);
                 _this.emit('connectionClosed', minerId);
             });
             socket.on('error', function(error){
-                console.log('Miner connection error: ' + error + ', id: ' + minerId);
+                logger.error('Miner connection error: ' + error + ', id: ' + minerId);
                 _this.emit('connectionClosed', minerId);
             });
         });
 
         server.listen(port, function(){
-            console.log("Proxy started, address: ", server.address());
+            logger.info("Proxy started, address: ", server.address());
             _this.on('connectionClosed', function(minerId){
                 delete miners[minerId];
             });
