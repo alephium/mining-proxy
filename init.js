@@ -1,6 +1,7 @@
 var client = require('./client.js');
 var proxy = require('./proxy.js');
 var fs = require('fs');
+var path = require('path');
 var bignum = require('bignum');
 var winston = require('winston');
 require('winston-daily-rotate-file');
@@ -20,7 +21,7 @@ var logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.DailyRotateFile({
-            filename: config.logPath + 'proxy-%DATE%.log',
+            filename: path.resolve(config.logPath, 'proxy-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
             maxSize: '100m',
             maxFiles: '1d',
