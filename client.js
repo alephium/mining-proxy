@@ -1,6 +1,5 @@
 var net = require('net');
 var events = require('events');
-var util = require('./util.js');
 
 var LastNJobs = function LastNJobs(jobSize){
     var chainIndexedJobs = [];
@@ -75,19 +74,6 @@ var PoolClient = module.exports = function(config, logger){
     }
 
     this.start = function(){
-        if (config.addresses.length != 4){
-            logger.error('Expect 4 miner addresses, but have ' + config.addresses.length);
-            process.exit(1);
-        }
-
-        for (var idx = 0; idx < 4; idx++){
-            var result = util.isValidAddress(config.addresses[idx], idx);
-            if (!result[0]){
-                logger.error('Invalid miner address, ' + result[1]);
-                process.exit(1);
-            }
-        }
-
         connectToMiningPool();
     }
 
