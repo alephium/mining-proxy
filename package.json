@@ -9,16 +9,16 @@
   "author": "alephium",
   "scripts": {
     "start": "node ./init.js",
-    "build": "npx pkg . -C Brotli"
+    "build": "npx pkg . -C brotli"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/alephium/mining-proxy.git"
   },
   "dependencies": {
-    "@napi-rs/blake-hash": "1.3.0",
-    "base58-native": "*",
-    "bignum": "0.13.1",
+    "mini-blake3": "6.5.5",
+    "bs58": "4.0.1",
+    "bignumber.js": "9.0.2",
     "binary-parser": "2.0.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
@@ -26,7 +26,8 @@
   "pkg": {
     "scripts": "*.js",
     "assets": "node_modules/**/*",
-    "outputPath": "bin"
+    "outputPath": "bin",
+    "targets": [ "node16-linux-x64", "node16-windows-x64", "node16-macos-x64" ]
   },
   "bin": {
     "proxy": "init.js"

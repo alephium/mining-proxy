@@ -2,8 +2,8 @@ name: build artifacts
 on: [ push ]
 
 jobs:
-  build-linux-artifact:
-    name: build-linux-artifact
+  build-artifacts:
+    name: build-artifacts
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -16,63 +16,23 @@ jobs:
         run: npm install
 
       - name: Build mining proxy
-        run: npm run build -- --targets node16-linux-x64
+        run: npm run build
 
       - name: Rename mining proxy
-        run: mv bin/alephium-mining-proxy bin/alephium-mining-proxy-linux_$(git rev-parse --short "$GITHUB_SHA")
+        run: |
+          mv bin/alephium-mining-proxy-linux bin/alephium-mining-proxy-linux_$(git rev-parse --short "$GITHUB_SHA")
+          mv bin/alephium-mining-proxy-macos bin/alephium-mining-proxy-macos_$(git rev-parse --short "$GITHUB_SHA")
+          mv bin/alephium-mining-proxy-win.exe bin/alephium-mining-proxy-windows_$(git rev-parse --short "$GITHUB_SHA").exe
 
       - uses: actions/upload-artifact@v2
         with:
           name: linux-binary
           path: bin/alephium-mining-proxy-linux_*
 
-  build-macos-artifact:
-    name: build-macos-artifact
-    runs-on: macos-10.15
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install build dependencies
-        run: npm install
-
-      - name: Build mining proxy
-        run: npm run build -- --targets node16-macos-x64
-
-      - name: Rename mining proxy
-        run: mv bin/alephium-mining-proxy bin/alephium-mining-proxy-macos_$(git rev-parse --short "$GITHUB_SHA")
-
       - uses: actions/upload-artifact@v2
         with:
           name: macos-binary
           path: bin/alephium-mining-proxy-macos_*
-
-  build-windows-artifact:
-    name: build-windows-artifact
-    runs-on: windows-2019
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install build dependencies
-        run: |
-          choco install openssl --no-progress
-          New-Item C:\OpenSSL-Win64\lib -ItemType Directory
-          New-Item -ItemType SymbolicLink -Path "C:\OpenSSL-Win64\lib\libeay32.lib" -Target "C:\Program Files\OpenSSL-Win64\lib\libcrypto.lib"
-          npm install
-
-      - name: Build mining proxy
-        run: npm run build -- --targets node16-windows-x64
-
-      - name: Rename mining proxy
-        run: mv bin/alephium-mining-proxy.exe bin/alephium-mining-proxy-windows_$(git rev-parse --short "$GITHUB_SHA").exe
-        shell: bash
 
       - uses: actions/upload-artifact@v2
         with:
@@ -83,7 +43,7 @@ jobs:
     name: release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    needs: [build-linux-artifact, build-macos-artifact, build-windows-artifact]
+    needs: build-artifacts
     steps:
       - uses: actions/checkout@v2
 

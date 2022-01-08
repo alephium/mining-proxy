@@ -1,4 +1,4 @@
-var base58 = require('base58-native');
+var bs58 = require('bs58');
 
 function djbHash(buffer){
     var hash = 5381;
@@ -17,7 +17,12 @@ function xorByte(intValue){
 }
 
 exports.isValidAddress = function(addressStr, groupIndex){
-    var decoded = base58.decode(addressStr);
+    var decoded = null;
+    try {
+        decoded = bs58.decode(addressStr);
+    } catch (error){
+        return [false, "invalid P2PKH address format"]
+    }
     if (decoded.length != 33){ // prefix(1 byte) + public key hash(32 bytes)
         return [false, 'incorrect P2PKH address size'];
     }
