@@ -120,7 +120,7 @@ var PoolClient = module.exports = function(config, logger){
                 fromGroup: block.fromGroup,
                 toGroup: block.toGroup,
                 nonce: block.nonce.toString('hex'),
-                worker: config.addresses[block.toGroup]
+                worker: config.address
             }
         });
     }

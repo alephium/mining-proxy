@@ -4,5 +4,5 @@
     "serverHost": "127.0.0.1",
     "serverPort": 20032,
     "proxyPort": 30032,
-    "addresses": []
+    "address": ""
 }
