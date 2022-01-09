@@ -1,4 +1,4 @@
-const {blake3} = require("@napi-rs/blake-hash");
+const {hash} = require('mini-blake3')
 
 const GroupSize = global.GroupSize = 4;
 const EncodedHeaderSize = 326;
@@ -32,7 +32,7 @@ var Block = module.exports = function(buffer){
     this.nonce = buffer.slice(0, NonceSize)
     this.headerBlob = buffer.slice(NonceSize, EncodedHeaderSize);
     this.header = Buffer.concat([this.nonce, this.headerBlob]);
-    this.hash = blake3(blake3(this.header));
+    this.hash = hash(hash(this.header));
     this.txsBlob = buffer.slice(EncodedHeaderSize);
 
     var index = chainIndex(this.hash);

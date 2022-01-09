@@ -56,14 +56,15 @@ var PoolClient = module.exports = function(config, logger){
                             break;
                         case "mining.set_difficulty":
                             _this.difficulty = messageJson.params[0];
-                            _this.target = global.diff1Target.mul(256).div(Math.ceil(_this.difficulty * 256)).toBuffer();
+                            let str = global.diff1Target.multipliedBy(256).div(Math.ceil(_this.difficulty * 256)).toString(16);
+                            _this.target = Buffer.from(str.length % 2 === 0 ? str : "0"+str, 'hex');
                             logger.info('Set difficulty to ' + _this.difficulty);
                             break;
                         case "mining.submit_result":
                             handleSubmitResult(messageJson);
                             break;
                         default:
-                            logger.error("Received unkonw message: ", messageJson);
+                            logger.error("Received unknown message: ", messageJson);
                             client.destroy();
                             break;
                     }

@@ -3,7 +3,7 @@ var proxy = require('./proxy.js');
 var util = require('./util.js');
 var fs = require('fs');
 var path = require('path');
-var bignum = require('bignum');
+var big = require('bignumber.js');
 var winston = require('winston');
 require('winston-daily-rotate-file');
 
@@ -13,7 +13,7 @@ if (!fs.existsSync('config.json')){
 }
 
 var config = JSON.parse(fs.readFileSync("config.json", {encoding: 'utf8'}));
-global.diff1Target = bignum.pow(2, 256 - config.diff1TargetNumZero).sub(1);
+global.diff1Target = new big(2).pow(256 - config.diff1TargetNumZero).minus(1);
 
 var logger = winston.createLogger({
     format: winston.format.combine(
