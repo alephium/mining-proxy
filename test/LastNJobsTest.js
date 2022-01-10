@@ -31,24 +31,21 @@ it('should update jobs', function(){
         var chainIndexedJobs = allJobs.map(jobs => jobs[idx]);
         expect(chainIndexedJobs).to.deep.equal(lastNJobs.chainIndexedJobs[idx]);
     }
-    expect(lastNJobs.oldestJobTimestamp).equal(lastNJobs.chainIndexedJobs[0][0].timestamp);
 })
 
-it('should remove expired jobs', function(){
+it('should remove all expired jobs', function(){
     var lastNJobs = new LastNJobs(1000);
     var now = Date.now();
-    var jobs0 = genJobs(now);
+    var expiredJobs = [genJobs(now), genJobs(now)];
     var timestamp = now - 2000;
-    lastNJobs.addJobs(jobs0, timestamp);
+    expiredJobs.forEach(jobs => lastNJobs.addJobs(jobs, timestamp));
     lastNJobs.chainIndexedJobs.forEach(jobs => {
-        expect(jobs.length).equal(1);
+        expect(jobs.length).equal(2);
     });
-    expect(lastNJobs.oldestJobTimestamp).equal(timestamp);
    
     var jobs1 = genJobs(now);
     lastNJobs.addJobs(jobs1, now);
     expect(lastNJobs.chainIndexedJobs.flat()).to.deep.equal(jobs1);
-    expect(lastNJobs.oldestJobTimestamp).equal(lastNJobs.chainIndexedJobs[0][0].timestamp);
 })
 
 it('should get job', function(){
