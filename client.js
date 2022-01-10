@@ -1,31 +1,6 @@
 var net = require('net');
 var events = require('events');
-
-var LastNJobs = function LastNJobs(jobSize){
-    var chainIndexedJobs = [];
-    for (var i = 0; i < 16; i++){
-        chainIndexedJobs.push([]);
-    }
-
-    this.addJob = function(chainIndex, job){
-        var jobs = chainIndexedJobs[chainIndex];
-        if (jobs.length >= jobSize){
-            jobs.shift();
-        }
-        jobs.push(job);
-    }
-
-    // return null if job does not exist
-    this.getJob = function(chainIndex, header){
-        var jobs = chainIndexedJobs[chainIndex];
-        for (var idx = jobs.length - 1; idx >=0; idx--){
-            if (jobs[idx].headerBlob.equals(header)){
-                return jobs[idx];
-            }
-        }
-        return null;
-    }
-}
+var LastNJobs = require('./LastNJobs.js');
 
 // mining-pool port and host
 var PoolClient = module.exports = function(config, logger){
@@ -104,8 +79,7 @@ var PoolClient = module.exports = function(config, logger){
 
     }
 
-    this.currentJobs = [];
-    this.lastNJobs = new LastNJobs(config.jobSize);
+    this.lastNJobs = new LastNJobs(10 * 1000);
     var handleMiningJobs = function(jobs){
         jobs.forEach(job => {
             job.headerBlob = Buffer.from(job.headerBlob, 'hex');
@@ -116,10 +90,8 @@ var PoolClient = module.exports = function(config, logger){
             else {
                 job.targetBlob = Buffer.from(job.targetBlob, 'hex');
             }
-            var chainIndex = job.fromGroup * global.GroupSize + job.toGroup;
-            _this.currentJobs[chainIndex] = job;
-            _this.lastNJobs.addJob(chainIndex, job);
         });
+        _this.lastNJobs.addJobs(jobs, Date.now());
         _this.emit("jobs", jobs);
     }
 

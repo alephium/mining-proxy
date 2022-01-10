@@ -9,17 +9,18 @@
   "author": "alephium",
   "scripts": {
     "start": "node ./init.js",
-    "build": "npx pkg . -C brotli"
+    "build": "npx pkg . -C brotli",
+    "test": "mocha --bail --exit"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/alephium/mining-proxy.git"
   },
   "dependencies": {
-    "mini-blake3": "6.5.5",
-    "bs58": "4.0.1",
     "bignumber.js": "9.0.2",
     "binary-parser": "2.0.2",
+    "bs58": "4.0.1",
+    "mini-blake3": "6.5.5",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
   },
@@ -27,12 +28,20 @@
     "scripts": "*.js",
     "assets": "node_modules/**/*",
     "outputPath": "bin",
-    "targets": [ "node16-linux-x64", "node16-windows-x64", "node16-macos-x64" ]
+    "targets": [
+      "node16-linux-x64",
+      "node16-windows-x64",
+      "node16-macos-x64"
+    ]
   },
   "bin": {
     "proxy": "init.js"
   },
   "engines": {
     "node": ">=14"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^9.1.3"
   }
 }
