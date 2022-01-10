@@ -1,7 +1,6 @@
 {
     "logPath": "./logs/",
     "diff1TargetNumZero": 30,
-    "jobSize": 5,
     "serverHost": "127.0.0.1",
     "serverPort": 20032,
     "proxyPort": 30032,
