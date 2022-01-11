@@ -7,6 +7,8 @@ configs explanation:
 
 ```javascript
 {
+    "logPath": "./logs/",   // mining pool logs
+    "diff1TargetNumZero": 30,
     "serverHost": "",       // mining pool server host
     "serverPort": 20032,    // mining pool server port
     "proxyPort": 30032,     // port which proxy bind
