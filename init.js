@@ -13,14 +13,13 @@ if (!fs.existsSync('config.json')){
 }
 
 var config = JSON.parse(fs.readFileSync("config.json", {encoding: 'utf8'}));
+global.diff1Target = new big(2).pow(256 - config.diff1TargetNumZero).minus(1);
+
 var error = util.isValidAddress(config.address);
 if (error){
     console.log('invalid address: ' + error);
     process.exit(1);
 }
-
-const diff1TargetNumZero = 30;
-global.diff1Target = new big(2).pow(256 - diff1TargetNumZero).minus(1);
 
 var logger = winston.createLogger({
     format: winston.format.combine(
