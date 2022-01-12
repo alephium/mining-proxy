@@ -5,6 +5,7 @@ var LastNJobs = require('./LastNJobs.js');
 // mining-pool port and host
 var PoolClient = module.exports = function(config, logger){
     var client = net.Socket();
+    var worker = config.workerName ? (config.workerName + '.' + config.address) : config.address;
     var _this = this;
 
     var setup = function(client){
@@ -120,7 +121,7 @@ var PoolClient = module.exports = function(config, logger){
                 fromGroup: block.fromGroup,
                 toGroup: block.toGroup,
                 nonce: block.nonce.toString('hex'),
-                worker: config.address
+                worker: worker
             }
         });
     }

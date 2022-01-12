@@ -21,6 +21,11 @@ if (error){
     process.exit(1);
 }
 
+if (config.workerName && config.workerName.length > 32){
+    console.log('`workerName` length cannot exceed 32');
+    process.exit(1);
+}
+
 var logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
