@@ -12,7 +12,8 @@ configs explanation:
     "serverHost": "",       // mining pool server host
     "serverPort": 20032,    // mining pool server port
     "proxyPort": 30032,     // port which proxy bind
-    "addresses": []         // your miner addresses(one address per group)
+    "workerName": "",       // custom worker name, length cannot exceed 32
+    "address": ""           // address for receiving rewards
 }
 ```
 

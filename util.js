@@ -16,28 +16,19 @@ function xorByte(intValue){
     return (byte0 ^ byte1 ^ byte2 ^ byte3) & 0xff;
 }
 
-exports.isValidAddress = function(addressStr, groupIndex){
+exports.isValidAddress = function(addressStr){
     var decoded = null;
     try {
         decoded = bs58.decode(addressStr);
     } catch (error){
-        return [false, "invalid P2PKH address format"]
+        return 'invalid P2PKH address format, error: ' + error;
     }
     if (decoded.length != 33){ // prefix(1 byte) + public key hash(32 bytes)
-        return [false, 'incorrect P2PKH address size'];
+        return 'incorrect P2PKH address size';
     }
 
     if (decoded[0] != 0x00){ // prefix for P2PKH
-        return [false, "invalid P2PKH address"];
+        return 'invalid P2PKH address';
     }
-
-    var hint = djbHash(decoded.slice(1)) | 1;
-    var hash = xorByte(hint);
-    var group = hash % global.GroupSize;
-    if (group == groupIndex){
-        return [true, ""];
-    }
-    else {
-        return [false, addressStr + ": expect group " + groupIndex + ", have group " + group];
-    }
+    return null;
 }

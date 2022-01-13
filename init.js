@@ -15,6 +15,17 @@ if (!fs.existsSync('config.json')){
 var config = JSON.parse(fs.readFileSync("config.json", {encoding: 'utf8'}));
 global.diff1Target = new big(2).pow(256 - config.diff1TargetNumZero).minus(1);
 
+var error = util.isValidAddress(config.address);
+if (error){
+    console.log('invalid address: ' + error);
+    process.exit(1);
+}
+
+if (config.workerName && config.workerName.length > 32){
+    console.log('`workerName` length cannot exceed 32');
+    process.exit(1);
+}
+
 var logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
@@ -33,19 +44,6 @@ var logger = winston.createLogger({
         })
     ]
 });
-
-if (config.addresses.length != 4){
-    logger.error('Expect 4 miner addresses, but have ' + config.addresses.length);
-    return;
-}
-
-for (var idx = 0; idx < 4; idx++){
-    var result = util.isValidAddress(config.addresses[idx], idx);
-    if (!result[0]){
-        logger.error('Invalid miner address, ' + result[1]);
-        return;
-    }
-}
 
 var minerProxy = new proxy(config.proxyPort, logger);
 var poolClient = new client(config, logger);

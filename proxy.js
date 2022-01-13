@@ -50,10 +50,12 @@ var Proxy = module.exports = function(port, logger){
         });
 
         server.listen(port, function(){
-            logger.info("Proxy started, address: ", server.address());
             _this.on('connectionClosed', function(minerId){
                 delete miners[minerId];
             });
+        }).on('listening', function(){
+            var host = server.address();
+            logger.info("Proxy started, listening on: " + host.address + ":" + host.port);
         });
     }
 
