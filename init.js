@@ -26,6 +26,7 @@ if (config.workerName && config.workerName.length > 32){
     process.exit(1);
 }
 
+var logPath = config.logPath ? config.logPath : './logs';
 var logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
@@ -33,7 +34,7 @@ var logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.DailyRotateFile({
-            filename: path.resolve(config.logPath, 'proxy-%DATE%.log'),
+            filename: path.resolve(logPath, 'proxy-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
             maxSize: '100m',
             maxFiles: '1d',
