@@ -3,10 +3,20 @@ var events = require('events');
 var LastNJobs = require('./LastNJobs.js');
 
 // mining-pool port and host
-var PoolClient = module.exports = function(config, logger){
+var PoolClient = module.exports = function(config, logger, fourAddressesMod){
     var client = net.Socket();
-    var worker = config.workerName ? (config.workerName + '.' + config.address) : config.address;
+    var workerPrefix = config.workerName ? (config.workerName + '.') : '';
     var _this = this;
+
+    if (fourAddressesMod){
+        _this.getWorker = function(groupIndex){
+            return workerPrefix + config.addresses[groupIndex]
+        }
+    } else {
+        _this.getWorker = function(groupIndex){
+            return workerPrefix + config.address;
+        }
+    }
 
     var setup = function(client){
         var buffer = '';
@@ -121,7 +131,7 @@ var PoolClient = module.exports = function(config, logger){
                 fromGroup: block.fromGroup,
                 toGroup: block.toGroup,
                 nonce: block.nonce.toString('hex'),
-                worker: worker
+                worker: _this.getWorker(block.toGroup)
             }
         });
     }

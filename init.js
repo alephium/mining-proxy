@@ -15,10 +15,25 @@ if (!fs.existsSync('config.json')){
 var config = JSON.parse(fs.readFileSync("config.json", {encoding: 'utf8'}));
 global.diff1Target = new big(2).pow(256 - config.diff1TargetNumZero).minus(1);
 
-var error = util.isValidAddress(config.address);
-if (error){
-    console.log('invalid address: ' + error);
+if (config.address && config.addresses){
+    console.log('invalid address config');
     process.exit(1);
+}
+
+var fourAddressesMode = config.addresses ? true : false;
+if (fourAddressesMode){
+    var error = util.validateAdddresses(config.addresses)
+    if (error){
+        console.log(error);
+        process.exit(1);
+    }
+}
+else {
+    var [_, error] = util.groupOfAddress(config.address);
+    if (error){
+        console.log('invalid address: ' + error);
+        process.exit(1);
+    }
 }
 
 if (config.workerName && config.workerName.length > 32){
@@ -26,6 +41,7 @@ if (config.workerName && config.workerName.length > 32){
     process.exit(1);
 }
 
+var logPath = config.logPath ? config.logPath : './logs';
 var logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp(),
@@ -33,7 +49,7 @@ var logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.DailyRotateFile({
-            filename: path.resolve(config.logPath, 'proxy-%DATE%.log'),
+            filename: path.resolve(logPath, 'proxy-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
             maxSize: '100m',
             maxFiles: '1d',
@@ -46,7 +62,7 @@ var logger = winston.createLogger({
 });
 
 var minerProxy = new proxy(config.proxyPort, logger);
-var poolClient = new client(config, logger);
+var poolClient = new client(config, logger, fourAddressesMode);
 
 minerProxy.start();
 poolClient.start();
