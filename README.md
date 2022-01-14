@@ -7,7 +7,6 @@ configs explanation:
 
 ```javascript
 {
-    "logPath": "./logs/",   // mining pool logs
     "diff1TargetNumZero": 30,
     "serverHost": "",       // mining pool server host
     "serverPort": 20032,    // mining pool server port
@@ -15,6 +14,17 @@ configs explanation:
     "workerName": "",       // custom worker name, length cannot exceed 32
     "address": ""           // address for receiving rewards
 }
+```
+
+you can also replace `address` with four miner addresses like v0.2.x proxy:
+
+```javascript
+    "diff1TargetNumZero": 30,
+    "serverHost": "",       // mining pool server host
+    "serverPort": 20032,    // mining pool server port
+    "proxyPort": 30032,     // port which proxy bind
+    "workerName": "",       // custom worker name, length cannot exceed 32
+    "addresses": []         // four miner addresses
 ```
 
 run miner-proxy:
