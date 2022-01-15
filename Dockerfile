@@ -14,9 +14,12 @@ run apk --no-cache add --virtual native-deps \
   npm install --quiet && \
   apk del native-deps
 
-ENV SERVER_HOST=eu.metapool.tech
+ENV LOG_PATH=./logs/
+ENV DIFF1_TARGET_NUM_ZERO=30
+ENV SERVER_HOST=127.0.0.1
 ENV SERVER_PORT=20032
 ENV PROXY_PORT=30032
 ENV ADDRESSES=[]
+ENV ADDRESS=""
 
 ENTRYPOINT ["/reconf", "-f", "-w", "/src/config.json.template:/src/config.json", "npm", "run", "start"]

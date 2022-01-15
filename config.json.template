@@ -1,8 +1,12 @@
 {
-    "diff1TargetNumZero": 30,
-    "jobSize": 30,
+    "logPath": "{{.env.LOG_PATH}}",
+    "diff1TargetNumZero": {{.env.DIFF1_TARGET_NUM_ZERO}},
     "serverHost": "{{.env.SERVER_HOST}}",
     "serverPort": {{.env.SERVER_PORT}},
     "proxyPort": {{.env.PROXY_PORT}},
+{{if .env.ADDRESS}}
+    "address": "{{.env.ADDRESS}}"
+{{else}}
     "addresses": {{.env.ADDRESSES}}
+{{end}}
 }

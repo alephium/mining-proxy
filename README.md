@@ -57,7 +57,7 @@ The final executable can be found in the 'bin' directory.
 
 # Docker and docker-compose setup
 
-Mind configuring `SERVER_HOST` and `ADDRESSES` in the snippet below
+Mind configuring `SERVER_HOST` and `ADDRESSES` or `ADDRESS` in the snippet below
 
 ```
 version: "3.3"
@@ -84,5 +84,8 @@ services:
     environment:
       - SERVER_HOST=1.2.3.4
       - PROXY_PORT=10973
+# If you're using multi addresses, add the 4 addresses here (in group order)
       - ADDRESSES=["1A4...","12G...","1Hk...","179..."]
+# If you're using a single address, add it here. Please avoid using Exchange wallet address here!!
+      - ADDRESS=1A4...
 ```
