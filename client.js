@@ -5,16 +5,16 @@ var LastNJobs = require('./LastNJobs.js');
 // mining-pool port and host
 var PoolClient = module.exports = function(config, logger, fourAddressesMod){
     var client = net.Socket();
-    var workerPrefix = config.workerName ? (config.workerName + '.') : '';
+    var workerPostfix = config.workerName ? ('.' + config.workerName) : '';
     var _this = this;
 
     if (fourAddressesMod){
         _this.getWorker = function(groupIndex){
-            return workerPrefix + config.addresses[groupIndex]
+            return config.addresses[groupIndex] + workerPostfix;
         }
     } else {
         _this.getWorker = function(groupIndex){
-            return workerPrefix + config.address;
+            return config.address + workerPostfix;
         }
     }
 
