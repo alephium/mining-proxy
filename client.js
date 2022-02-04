@@ -50,8 +50,7 @@ var PoolClient = module.exports = function(config, logger, fourAddressesMod){
                             handleSubmitResult(messageJson);
                             break;
                         default:
-                            logger.error("Received unknown message: ", messageJson);
-                            client.destroy();
+                            logger.warn("Received unknown message: ", messageJson);
                             break;
                     }
                 });
